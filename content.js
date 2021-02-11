@@ -81,7 +81,8 @@ function getTodayTasks(tasks) {
     })
 }
 
-function createPostBoxContainer(containerName, tasks, containerNameColor) {
+function createPostBoxContainer(containerName = '', tasks = [], containerNameColor = '') {
+  tasks.sort(compareToTaskTitleAsc)
   const container = getPostBoxContainer()
   const copyHtml = getPostBoxContainerBoxFirst().cloneNode(true).getRootNode()
   container.insertBefore(copyHtml, getPostBoxContainerBoxFirst())
@@ -120,4 +121,14 @@ function setClickListener(originTasks = []) {
         newElements[i].parentElement.addEventListener('click', () => _this.click())
       })
   }
+}
+
+function compareToTaskTitleAsc(a, b) {
+  const aTitle = a.getElementsByClassName('postCard__subject')[0].textContent
+  const bTitle = b.getElementsByClassName('postCard__subject')[0].textContent
+
+  if(aTitle < bTitle) {
+    return -1
+  }
+  return aTitle > bTitle ? 1 : 0
 }
