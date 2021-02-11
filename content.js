@@ -93,7 +93,7 @@ function createPostBoxContainer(containerName, tasks, containerNameColor) {
 
   getPostBoxContainerBoxFirst().getElementsByClassName('dragPostBoxBody__list')[0].innerHTML = tasks
     .map((_this) => _this.outerHTML)
-    .join()
+    .join('')
 
   setClickListener(tasks)
 }
