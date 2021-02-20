@@ -48,8 +48,14 @@ function getLastDayTasks(tasks) {
   })
 }
 
-function getLastDayString(tasks) {
+function getLastDayString(tasks = []) {
+  const today = getTodayString()
   const arr = tasks
+    .filter((_this) => {
+      const str = _this.getElementsByClassName('postCard__subject')[0].textContent
+      const dateStrs = getYYYYMMDDWithSlash(str)
+      return dateStrs !== today
+    }) 
     .map((_this) => {
       const str = _this.getElementsByClassName('postCard__subject')[0].textContent
       const dateStrs = getYYYYMMDDWithSlash(str).split('/')
@@ -66,12 +72,16 @@ function getLastDayString(tasks) {
   return `${strs[0]}/${Number(strs[1])}/${Number(strs[2])}`
 }
 
-function getTodayTasks(tasks) {
+function getTodayString() {
   const date = new Date()
   const year = date.getFullYear()
   const month = date.getMonth() + 1
   const dayOfMonth = date.getDate()
-  const today = `${year}/${month}/${dayOfMonth}`
+  return `${year}/${month}/${dayOfMonth}`
+}
+
+function getTodayTasks(tasks) {
+  const today = getTodayString()
 
   return tasks
     .filter(( _this) => {
