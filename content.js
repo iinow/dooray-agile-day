@@ -13,6 +13,35 @@ function init() {
 
   createPostBoxContainer('오늘', todayTasks, '#00bfa5')
   createPostBoxContainer('마지막날', lastTasks, '#ec407a')
+
+  document.addEventListener('keydown', e => handleDocumentKeyDown(e, convertTaskMap(todayTasks, lastTasks)))
+}
+
+/**
+ * @returns { userName: { taskName: { taskTag } } }
+ */
+function convertTaskMap(todayTasks = [], lastTasks = []) {
+  const res = {}
+
+  todayTasks.forEach(task => {
+    const taskName = getSubjectTag(task).textContent
+    const userName = getName(taskName)
+    if(!res[userName]) {
+      res[userName] = {}
+    }
+    res[userName][taskName] = task
+  })
+
+  lastTasks.forEach(task => {
+    const taskName = getSubjectTag(task).textContent
+    const userName = getName(taskName)
+    if(!res[userName]) {
+      res[userName] = {}
+    }
+    res[userName][taskName] = task
+  })
+
+  return res
 }
 
 function getPostBoxContainerTasks() {
@@ -43,7 +72,7 @@ function getName(title) {
 function getLastDayTasks(tasks) {
   const lastDay = getLastDayString(tasks)
   return tasks.filter((_this) => {
-    const day = _this.getElementsByClassName('postCard__subject')[0].textContent
+    const day = getSubjectTag(_this).textContent
     return day.includes(lastDay)
   })
 }
@@ -52,12 +81,12 @@ function getLastDayString(tasks = []) {
   const today = getTodayString()
   const arr = tasks
     .filter((_this) => {
-      const str = _this.getElementsByClassName('postCard__subject')[0].textContent
+      const str = getSubjectTag(_this).textContent
       const dateStrs = getYYYYMMDDWithSlash(str)
       return dateStrs !== today
     }) 
     .map((_this) => {
-      const str = _this.getElementsByClassName('postCard__subject')[0].textContent
+      const str = getSubjectTag(_this).textContent
       const dateStrs = getYYYYMMDDWithSlash(str).split('/')
       const year = dateStrs[0]
       const month = dateStrs[1].length === 1 ? `0${dateStrs[1]}` : dateStrs[1]
@@ -85,10 +114,14 @@ function getTodayTasks(tasks) {
 
   return tasks
     .filter(( _this) => {
-      const subject = _this.getElementsByClassName('postCard__subject')[0]
+      const subject = getSubjectTag(_this)
       const yyyyMMdd = getYYYYMMDDWithSlash(subject.textContent)
       return today === yyyyMMdd
     })
+}
+
+function getSubjectTag(tag) {
+  return tag.getElementsByClassName('postCard__subject')[0]
 }
 
 function createPostBoxContainer(containerName = '', tasks = [], containerNameColor = '') {
@@ -124,7 +157,7 @@ function setClickListener(originTasks = []) {
 
     originTasks
       .filter((_this) => {
-        const originTitle = _this.getElementsByClassName('postCard__subject')[0].textContent
+        const originTitle = getSubjectTag(_this).textContent
         return title === originTitle
       })
       .forEach((_this) => {
@@ -134,11 +167,85 @@ function setClickListener(originTasks = []) {
 }
 
 function compareToTaskTitleAsc(a, b) {
-  const aTitle = a.getElementsByClassName('postCard__subject')[0].textContent
-  const bTitle = b.getElementsByClassName('postCard__subject')[0].textContent
+  const aTitle = getSubjectTag(a).textContent
+  const bTitle = getSubjectTag(b).textContent
 
   if(aTitle < bTitle) {
     return -1
   }
   return aTitle > bTitle ? 1 : 0
+}
+
+function handleDocumentKeyDown(e, taskMap = {}) {
+  const modalTaskName = findModalTaskName()
+  if(!modalTaskName) {
+    return
+  }
+
+  const userName = getName(modalTaskName)
+  let userIdx = null
+  let taskIdx = null
+
+  Object.keys(taskMap)
+    .forEach((key, index) => {
+      if(key !== userName) {
+        return
+      }
+      userIdx = index
+    })
+  
+  Object.keys(taskMap)
+    .forEach((key) => {
+      Object.keys(taskMap[key]).forEach((taskKey, index) => {
+        if(taskKey !== modalTaskName) {
+          return
+        }
+        taskIdx = index
+      }) 
+    })
+
+  switch(e.key) {
+    case 'ArrowLeft':
+      taskIdx--
+      break
+    case 'ArrowRight':
+      taskIdx++
+      break
+    case 'ArrowDown':
+      userIdx++
+      break
+    case 'ArrowUp':
+      userIdx--
+      break
+  }
+
+  let matchTag = null
+
+  Object.keys(taskMap)
+    .forEach((key, userIndex) => {
+      if(userIdx !== userIndex) {
+        return
+      }
+      Object.keys(taskMap[key]).forEach((taskKey, taskIndex) => {
+        if(taskIdx !== taskIndex) {
+          return
+        }
+        closeModal()
+        taskMap[key][taskKey].click()
+      }) 
+    })
+}
+
+function findModalTaskName() {
+  const res = document.getElementsByClassName('modal-dialog')
+  if(res.length === 0) {
+    return
+  }
+
+  const modal = res[0]
+  return modal.getElementsByClassName('subject ng-binding ng-scope')[0]?.textContent
+}
+
+function closeModal() {
+  document.getElementsByClassName('modal ng-isolate-scope modal-itemview in')[0]?.click()
 }
