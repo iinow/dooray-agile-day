@@ -217,6 +217,8 @@ function handleDocumentKeyDown(e, taskMap = {}) {
     case 'ArrowUp':
       userIdx--
       break
+    default:
+      return
   }
 
   let matchTag = null
