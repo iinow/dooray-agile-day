@@ -1,30 +1,20 @@
 const titleRegex = /^dailylog-(\d{4}\/\d{1,2}\/\d{1,2})-([가-힣]+)$/i
 
-const statusObj = { isUpdated: false }
+setTimeout(init, 3000)
 
-setInterval(() => {
-  init(statusObj)
-}, 1000)
-
-function init(statusObj) {
+function init() {
   const postBoxContainerTasks = getPostBoxContainerTasks()
-  if(!postBoxContainerTasks || statusObj.isUpdated) {
+  if(!postBoxContainerTasks) {
     return
   }
 
-  try {
-    const todayTasks = getTodayTasks(postBoxContainerTasks)
-    const lastTasks = getLastDayTasks(postBoxContainerTasks)
-  
-    createPostBoxContainer('오늘', todayTasks, '#00bfa5')
-    createPostBoxContainer('마지막날', lastTasks, '#ec407a')
-  
-    document.addEventListener('keydown', e => handleDocumentKeyDown(e, convertTaskMap(todayTasks, lastTasks)))
-  
-    statusObj.isUpdated = true
-  } catch (e) {
+  const todayTasks = getTodayTasks(postBoxContainerTasks)
+  const lastTasks = getLastDayTasks(postBoxContainerTasks)
 
-  }
+  createPostBoxContainer('오늘', todayTasks, '#00bfa5')
+  createPostBoxContainer('마지막날', lastTasks, '#ec407a')
+
+  document.addEventListener('keydown', e => handleDocumentKeyDown(e, convertTaskMap(todayTasks, lastTasks)))
 }
 
 /**
@@ -100,7 +90,7 @@ function getLastDayString(tasks = []) {
 
   arr.sort()
   const last = arr[arr.length - 1]
-  const strs = last?.split('/')
+  const strs = last.split('/')
   
   return `${strs[0]}/${Number(strs[1])}/${Number(strs[2])}`
 }
